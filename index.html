@@ -38,10 +38,11 @@
             width: 100%;
             border-collapse: collapse;
             background: white;
+            table-layout: auto;
         }
 
         td {
-            width: 20%;
+            width: auto;
             height: 120px;
             text-align: center;
             font-size: 24px;
@@ -49,6 +50,7 @@
             cursor: pointer;
             position: relative;
             perspective: 1000px;
+            min-width: 150px;
         }
 
         .flip-box {
@@ -85,16 +87,7 @@
             background: #4CAF50;
             color: white;
             transform: rotateY(180deg);
-            font-family: 'Preeti', sans-serif; /* Preeti font for Nepali */
-        }
-
-        .speak-btn {
-            margin-top: 5px;
-            cursor: pointer;
-            background: none;
-            border: none;
-            font-size: 18px;
-            color: #2196F3;
+            font-family: 'Preeti', sans-serif;
         }
 
         .form-container {
@@ -111,7 +104,6 @@
             border-radius: 5px;
         }
 
-        /* Preeti Font for Input */
         #meaning {
             font-family: 'Preeti', sans-serif;
         }
@@ -130,7 +122,6 @@
             background-color: #45a049;
         }
 
-        /* Responsive Design */
         @media (max-width: 768px) {
             td {
                 font-size: 18px;
@@ -173,44 +164,12 @@
     </div>
 
     <div class="container">
-        <table id="wordTable">
-            <tr>
-                <td>
-                    <div class="flip-box">
-                        <div class="flip-front">
-                            Teacher 
-                            <button class="speak-btn" onclick="speak('Teacher', 'en')">🔊</button>
-                        </div>
-                        <div class="flip-back">
-                            <span class="preeti">शिक्षक</span>
-                            <button class="speak-btn" onclick="speak('शिक्षक', 'ne')">🔊</button>
-                        </div>
-                    </div>
-                </td>
-                <td>
-                    <div class="flip-box">
-                        <div class="flip-front">
-                            Farmer
-                            <button class="speak-btn" onclick="speak('Farmer', 'en')">🔊</button>
-                        </div>
-                        <div class="flip-back">
-                            <span class="preeti">किसान</span>
-                            <button class="speak-btn" onclick="speak('किसान', 'ne')">🔊</button>
-                        </div>
-                    </div>
-                </td>
-            </tr>
+        <table>
+            <tr id="wordRow"></tr>
         </table>
     </div>
 
     <script>
-        function speak(text, lang) {
-            let msg = new SpeechSynthesisUtterance();
-            msg.text = text;
-            msg.lang = lang === 'ne' ? 'ne-NP' : 'en-US';
-            window.speechSynthesis.speak(msg);
-        }
-
         function addWord() {
             let word = document.getElementById("word").value.trim();
             let meaning = document.getElementById("meaning").value.trim();
@@ -220,26 +179,21 @@
                 return;
             }
 
-            let table = document.getElementById("wordTable");
-            let lastRow = table.rows[table.rows.length - 1];
+            let row = document.getElementById("wordRow");
+            let cell = document.createElement("td");
 
-            if (!lastRow || lastRow.cells.length >= 5) {
-                lastRow = table.insertRow();
-            }
-
-            let cell = lastRow.insertCell();
             cell.innerHTML = `
                 <div class="flip-box">
                     <div class="flip-front">
-                        ${word} 
-                        <button class="speak-btn" onclick="speak('${word}', 'en')">🔊</button>
+                        ${word}
                     </div>
                     <div class="flip-back" style="font-family: 'Preeti';">
                         ${meaning}
-                        <button class="speak-btn" onclick="speak('${meaning}', 'ne')">🔊</button>
                     </div>
                 </div>
             `;
+
+            row.appendChild(cell);
 
             document.getElementById("word").value = "";
             document.getElementById("meaning").value = "";
@@ -247,4 +201,4 @@
     </script>
 
 </body>
-  </html>
+</html>
