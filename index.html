@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocabulary Flashcards</title>
+    <style>
+        @font-face {
+            font-family: 'Preeti';
+            src: url('https://res.cloudinary.com/drrwlrqap/raw/upload/v1738120456/preeti_ehyfot.ttf') format('truetype');
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        td {
+            width: 20%;
+            height: 120px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            position: relative;
+            perspective: 1000px;
+        }
+
+        .flip-box {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+
+        td:hover .flip-box,
+        td:focus .flip-box {
+            transform: rotateY(180deg);
+        }
+
+        .flip-front, .flip-back {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #2196F3;
+            flex-direction: column;
+        }
+
+        .flip-front {
+            background: #ffffff;
+            color: #000;
+        }
+
+        .flip-back {
+            background: #4CAF50;
+            color: white;
+            transform: rotateY(180deg);
+            font-family: 'Preeti', sans-serif; /* Preeti font for Nepali */
+        }
+
+        .speak-btn {
+            margin-top: 5px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: #2196F3;
+        }
+
+        .form-container {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 18px;
+            width: 200px;
+            border: 2px solid #2196F3;
+            border-radius: 5px;
+        }
+
+        /* Preeti Font for Input */
+        #meaning {
+            font-family: 'Preeti', sans-serif;
+        }
+
+        button {
+            padding: 10px 15px;
+            font-size: 18px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            td {
+                font-size: 18px;
+                height: 100px;
+            }
+
+            input {
+                font-size: 16px;
+                width: 150px;
+            }
+
+            button {
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            td {
+                font-size: 16px;
+                height: 80px;
+            }
+
+            input {
+                font-size: 14px;
+                width: 130px;
+            }
+
+            button {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <input type="text" id="word" placeholder="Enter English Word">
+        <input type="text" id="meaning" placeholder="Enter Nepali Meaning">
+        <button onclick="addWord()">Add Word</button>
+    </div>
+
+    <div class="container">
+        <table id="wordTable">
+            <tr>
+                <td>
+                    <div class="flip-box">
+                        <div class="flip-front">
+                            Teacher 
+                            <button class="speak-btn" onclick="speak('Teacher', 'en')">🔊</button>
+                        </div>
+                        <div class="flip-back">
+                            <span class="preeti">शिक्षक</span>
+                            <button class="speak-btn" onclick="speak('शिक्षक', 'ne')">🔊</button>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="flip-box">
+                        <div class="flip-front">
+                            Farmer
+                            <button class="speak-btn" onclick="speak('Farmer', 'en')">🔊</button>
+                        </div>
+                        <div class="flip-back">
+                            <span class="preeti">किसान</span>
+                            <button class="speak-btn" onclick="speak('किसान', 'ne')">🔊</button>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        function speak(text, lang) {
+            let msg = new SpeechSynthesisUtterance();
+            msg.text = text;
+            msg.lang = lang === 'ne' ? 'ne-NP' : 'en-US';
+            window.speechSynthesis.speak(msg);
+        }
+
+        function addWord() {
+            let word = document.getElementById("word").value.trim();
+            let meaning = document.getElementById("meaning").value.trim();
+
+            if (word === "" || meaning === "") {
+                alert("Please enter both word and meaning.");
+                return;
+            }
+
+            let table = document.getElementById("wordTable");
+            let lastRow = table.rows[table.rows.length - 1];
+
+            if (!lastRow || lastRow.cells.length >= 5) {
+                lastRow = table.insertRow();
+            }
+
+            let cell = lastRow.insertCell();
+            cell.innerHTML = `
+                <div class="flip-box">
+                    <div class="flip-front">
+                        ${word} 
+                        <button class="speak-btn" onclick="speak('${word}', 'en')">🔊</button>
+                    </div>
+                    <div class="flip-back" style="font-family: 'Preeti';">
+                        ${meaning}
+                        <button class="speak-btn" onclick="speak('${meaning}', 'ne')">🔊</button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById("word").value = "";
+            document.getElementById("meaning").value = "";
+        }
+    </script>
+
+</body>
+  </html>
