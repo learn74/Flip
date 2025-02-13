@@ -102,6 +102,7 @@
             border-radius: 5px;
         }
 
+        /* Preeti Font for Input */
         #meaning {
             font-family: 'Preeti', sans-serif;
         }
@@ -120,6 +121,30 @@
             background-color: #45a049;
         }
 
+        /* Delete Button */
+        .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: red;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 16px;
+            line-height: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .delete-btn:hover {
+            background-color: darkred;
+        }
+
+        /* Responsive Design */
         @media (max-width: 768px) {
             td {
                 font-size: 18px;
@@ -163,12 +188,34 @@
 
     <div class="container">
         <table id="wordTable">
+            <tr>
+                <td>
+                    <div class="flip-box">
+                        <button class="delete-btn" onclick="deleteWord(this)">❌</button>
+                        <div class="flip-front">
+                            Teacher
+                        </div>
+                        <div class="flip-back">
+                            <span class="preeti">शिक्षक</span>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="flip-box">
+                        <button class="delete-btn" onclick="deleteWord(this)">❌</button>
+                        <div class="flip-front">
+                            Farmer
+                        </div>
+                        <div class="flip-back">
+                            <span class="preeti">किसान</span>
+                        </div>
+                    </div>
+                </td>
+            </tr>
         </table>
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", loadWords);
-
         function addWord() {
             let word = document.getElementById("word").value.trim();
             let meaning = document.getElementById("meaning").value.trim();
@@ -178,44 +225,39 @@
                 return;
             }
 
-            let words = JSON.parse(localStorage.getItem("words")) || [];
-            words.push({ word, meaning });
-            localStorage.setItem("words", JSON.stringify(words));
+            let table = document.getElementById("wordTable");
+            let lastRow = table.rows[table.rows.length - 1];
 
-            renderWords();
+            if (!lastRow || lastRow.cells.length >= 5) {
+                lastRow = table.insertRow();
+            }
+
+            let cell = lastRow.insertCell();
+            cell.innerHTML = `
+                <div class="flip-box">
+                    <button class="delete-btn" onclick="deleteWord(this)">❌</button>
+                    <div class="flip-front">
+                        ${word}
+                    </div>
+                    <div class="flip-back" style="font-family: 'Preeti';">
+                        ${meaning}
+                    </div>
+                </div>
+            `;
 
             document.getElementById("word").value = "";
             document.getElementById("meaning").value = "";
         }
 
-        function renderWords() {
-            let table = document.getElementById("wordTable");
-            table.innerHTML = "";
+        function deleteWord(button) {
+            let cell = button.parentElement.parentElement;
+            let row = cell.parentElement;
 
-            let words = JSON.parse(localStorage.getItem("words")) || [];
-            let row;
+            row.removeChild(cell);
 
-            words.forEach((item, index) => {
-                if (index % 5 === 0) {
-                    row = table.insertRow();
-                }
-
-                let cell = row.insertCell();
-                cell.innerHTML = `
-                    <div class="flip-box">
-                        <div class="flip-front">
-                            ${item.word}
-                        </div>
-                        <div class="flip-back">
-                            ${item.meaning}
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function loadWords() {
-            renderWords();
+            if (row.cells.length === 0) {
+                row.parentElement.removeChild(row);
+            }
         }
     </script>
 
