@@ -59,8 +59,7 @@
             transition: transform 0.6s;
         }
 
-        td:hover .flip-box,
-        td:focus .flip-box {
+        td:hover .flip-box {
             transform: rotateY(180deg);
         }
 
@@ -85,12 +84,12 @@
             background: #4CAF50;
             color: white;
             transform: rotateY(180deg);
-            font-family: 'Preeti', sans-serif; /* Preeti font for Nepali */
+            font-family: 'Preeti', sans-serif;
         }
 
         .form-container {
             margin-bottom: 20px;
-            display: flex;
+            display: none;
             gap: 10px;
         }
 
@@ -102,7 +101,6 @@
             border-radius: 5px;
         }
 
-        /* Preeti Font for Input */
         #meaning {
             font-family: 'Preeti', sans-serif;
         }
@@ -121,41 +119,39 @@
             background-color: #45a049;
         }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            td {
-                font-size: 18px;
-                height: 100px;
-            }
-
-            input {
-                font-size: 16px;
-                width: 150px;
-            }
-
-            button {
-                font-size: 16px;
-            }
+        .delete-btn, .edit-btn {
+            margin-top: 5px;
+            cursor: pointer;
+            background: red;
+            color: white;
+            border: none;
+            font-size: 14px;
+            padding: 5px;
+            border-radius: 3px;
         }
 
-        @media (max-width: 480px) {
-            td {
-                font-size: 16px;
-                height: 80px;
-            }
+        .edit-btn {
+            background: orange;
+        }
 
-            input {
-                font-size: 14px;
-                width: 130px;
-            }
+        .password-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
 
-            button {
-                font-size: 14px;
-            }
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
+
+    <div class="password-container">
+        <input type="password" id="password" placeholder="Enter Password">
+        <button onclick="checkPassword()">Login</button>
+    </div>
 
     <div class="form-container">
         <input type="text" id="word" placeholder="Enter English Word">
@@ -164,34 +160,40 @@
     </div>
 
     <div class="container">
-        <table id="wordTable">
-            <tr>
-                <td>
-                    <div class="flip-box">
-                        <div class="flip-front">
-                            Teacher
-                        </div>
-                        <div class="flip-back">
-                            <span class="preeti">शिक्षक</span>
-                        </div>
-                    </div>
-                </td>
-                <td>
-                    <div class="flip-box">
-                        <div class="flip-front">
-                            Farmer
-                        </div>
-                        <div class="flip-back">
-                            <span class="preeti">किसान</span>
-                        </div>
-                    </div>
-                </td>
-            </tr>
-        </table>
+        <table id="wordTable"></table>
     </div>
 
     <script>
+        let isAuthenticated = false;
+
+        document.addEventListener("DOMContentLoaded", loadWords);
+
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(byte => byte.toString(16).padStart(2, "0")).join("");
+        }
+
+        async function checkPassword() {
+            let inputPassword = document.getElementById("password").value;
+            let hashedInput = await hashPassword(inputPassword);
+            let correctHash = "b5d7df2d5fa3a8a5cfbdcc9e0f17d6595308dd119cc680e34b39f9cf3e35b1a6"; // Hashed password of SUb89P13
+
+            if (hashedInput === correctHash) {
+                isAuthenticated = true;
+                document.querySelector(".password-container").classList.add("hidden");
+                document.querySelector(".form-container").style.display = "flex";
+                renderWords();
+            } else {
+                alert("Incorrect Password!");
+            }
+        }
+
         function addWord() {
+            if (!isAuthenticated) return;
+
             let word = document.getElementById("word").value.trim();
             let meaning = document.getElementById("meaning").value.trim();
 
@@ -200,29 +202,72 @@
                 return;
             }
 
-            let table = document.getElementById("wordTable");
-            let lastRow = table.rows[table.rows.length - 1];
+            let words = JSON.parse(localStorage.getItem("words")) || [];
+            words.push({ word, meaning });
+            localStorage.setItem("words", JSON.stringify(words));
 
-            if (!lastRow || lastRow.cells.length >= 5) {
-                lastRow = table.insertRow();
-            }
-
-            let cell = lastRow.insertCell();
-            cell.innerHTML = `
-                <div class="flip-box">
-                    <div class="flip-front">
-                        ${word}
-                    </div>
-                    <div class="flip-back" style="font-family: 'Preeti';">
-                        ${meaning}
-                    </div>
-                </div>
-            `;
-
+            renderWords();
             document.getElementById("word").value = "";
             document.getElementById("meaning").value = "";
+        }
+
+        function renderWords() {
+            let table = document.getElementById("wordTable");
+            table.innerHTML = "";
+
+            let words = JSON.parse(localStorage.getItem("words")) || [];
+            let row;
+
+            words.forEach((item, index) => {
+                if (index % 5 === 0) {
+                    row = table.insertRow();
+                }
+
+                let cell = row.insertCell();
+                cell.innerHTML = `
+                    <div class="flip-box">
+                        <div class="flip-front">
+                            ${item.word}
+                        </div>
+                        <div class="flip-back">
+                            ${item.meaning}
+                        </div>
+                    </div>
+                    ${isAuthenticated ? `
+                        <button class="edit-btn" onclick="editWord(${index})">Edit</button>
+                        <button class="delete-btn" onclick="deleteWord(${index})">Delete</button>
+                    ` : ""}
+                `;
+            });
+        }
+
+        function editWord(index) {
+            if (!isAuthenticated) return;
+
+            let words = JSON.parse(localStorage.getItem("words")) || [];
+            let newWord = prompt("Enter new English word:", words[index].word);
+            let newMeaning = prompt("Enter new Nepali meaning:", words[index].meaning);
+
+            if (newWord && newMeaning) {
+                words[index] = { word: newWord, meaning: newMeaning };
+                localStorage.setItem("words", JSON.stringify(words));
+                renderWords();
+            }
+        }
+
+        function deleteWord(index) {
+            if (!isAuthenticated) return;
+
+            let words = JSON.parse(localStorage.getItem("words")) || [];
+            words.splice(index, 1);
+            localStorage.setItem("words", JSON.stringify(words));
+            renderWords();
+        }
+
+        function loadWords() {
+            renderWords();
         }
     </script>
 
 </body>
-    </html>
+</html>
